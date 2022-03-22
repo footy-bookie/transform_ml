@@ -19,7 +19,7 @@ def get_vm_custom_envs(meta_key: str):
 
 def write_data(df: DataFrame, sink_name: str):
     storage_client = storage.Client()
-    bucket = storage_client.get_bucket(sink_name)
+    bucket = storage_client.get_bucket(get_vm_custom_envs(sink_name))
 
     csv_name = "xgb-pred.csv" if sink_name == 'dev-footy_predictions_sink' else "{}-xgb-pred.csv".format(
         datetime.datetime.now().strftime("%Y-%m-%d-%H-%M"))
