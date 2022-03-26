@@ -3,11 +3,11 @@ import time
 import warnings
 
 import numpy as np
-
+import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model
+from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model, write_data
 
 warnings.filterwarnings('ignore')
 
@@ -114,5 +114,11 @@ class XGBAnalysis:
         upper_limits()
         print("XGB train Accuracy: %.2f%%" % (accuracy_train * 100.0))
         print("XGB Accuracy: %.2f%%" % (accuracy * 100.0))
+
+        # for now, saves acc. to textfile
+        write_data((pd.DataFrame(pd.Series(
+            ["XGB train Accuracy: %.2f%%" % (accuracy_train * 100.0), "XGB Accuracy: %.2f%%" % (accuracy * 100.0)]))),
+            'PREDICTIONS_OVER_TIME_SINK')
+
         under_limits()
         return xgb_df_next_games
