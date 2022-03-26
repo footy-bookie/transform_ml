@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model, write_data
+from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model, write_acc_file
 
 warnings.filterwarnings('ignore')
 
@@ -116,9 +116,8 @@ class XGBAnalysis:
         print("XGB Accuracy: %.2f%%" % (accuracy * 100.0))
 
         # for now, saves acc. to textfile
-        write_data((pd.DataFrame(pd.Series(
-            ["XGB train Accuracy: %.2f%%" % (accuracy_train * 100.0), "XGB Accuracy: %.2f%%" % (accuracy * 100.0)]))),
-            'PREDICTIONS_OVER_TIME_SINK')
+        write_acc_file(pd.DataFrame(pd.Series(
+            [accuracy_train * 100.0, accuracy * 100.0])), 'PREDICTIONS_OVER_TIME_SINK')
 
         under_limits()
         return xgb_df_next_games

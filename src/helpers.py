@@ -29,6 +29,17 @@ def write_data(df: DataFrame, sink_name: str):
         df.to_csv(header=False, index=False), "text/csv")
 
 
+def write_acc_file(df: DataFrame, sink_name: str):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(get_vm_custom_envs(sink_name))
+
+    csv_name = "{}-acc.csv".format(
+        datetime.datetime.now().strftime("%Y-%m-%d-%H-%M"))
+
+    bucket.blob(csv_name).upload_from_string(
+        df.to_csv(header=False, index=False), "text/csv")
+
+
 def save_to_db(df: DataFrame):
     write_data(df, 'PREDICTIONS_SINK')
     write_data(df, 'PREDICTIONS_OVER_TIME_SINK')
