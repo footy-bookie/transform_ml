@@ -2,6 +2,7 @@ import datetime
 
 import pandas as pd
 import requests
+import xgboost as xgb
 from google.cloud import storage
 from pandas import DataFrame
 
@@ -37,6 +38,22 @@ def read_storage_csv(file_name: str):
     return pd.read_csv(
         'gs://{}/{}'.format(get_vm_custom_envs("PREP_SINK"), file_name)
     )
+
+
+def xgb_model():
+    XGB_model = xgb.XGBClassifier(silent=False,
+                                  learning_rate=0.005,
+                                  colsample_bytree=0.5,
+                                  subsample=0.8,
+                                  objective='multi:softprob',
+                                  n_estimators=1000,
+                                  reg_alpha=0.2,
+                                  reg_lambda=.5,
+                                  max_depth=5,
+                                  gamma=5,
+                                  seed=82)
+
+    return XGB_model
 
 
 def upper_limits():

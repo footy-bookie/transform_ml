@@ -3,11 +3,11 @@ import time
 import warnings
 
 import numpy as np
-import xgboost as xgb
+
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from helpers import read_storage_csv, save_to_db, upper_limits, under_limits
+from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model
 
 warnings.filterwarnings('ignore')
 
@@ -43,21 +43,6 @@ class XGBAnalysis:
 
         return X_train, X_test, y_train, y_test
 
-    def xgb_model(self):
-        XGB_model = xgb.XGBClassifier(silent=False,
-                                      learning_rate=0.005,
-                                      colsample_bytree=0.5,
-                                      subsample=0.8,
-                                      objective='multi:softprob',
-                                      n_estimators=1000,
-                                      reg_alpha=0.2,
-                                      reg_lambda=.5,
-                                      max_depth=5,
-                                      gamma=5,
-                                      seed=82)
-
-        return XGB_model
-
     def feature_importance(self, model):
         features_names = list(self.X_with_columns.columns)
 
@@ -87,7 +72,7 @@ class XGBAnalysis:
     def xgb_fit_and_predict(self):
         X_train, X_test, y_train, y_test = self.k_fold()
         eval_set = [(X_train, y_train), (X_test, y_test)]
-        XGB_model = self.xgb_model()
+        XGB_model = xgb_model()
 
         XGB_model.fit(X_train, y_train, eval_metric=["merror", "mlogloss"], eval_set=eval_set, verbose=True)
         y_pred = XGB_model.predict(X_test)
@@ -100,23 +85,25 @@ class XGBAnalysis:
         xgb_df_next_games = xgb_df_next_games.iloc[::-1].reset_index(drop=True)
 
         df_all = read_storage_csv('goal_diff_calculation.csv')
-        df_all = df_all.iloc[::-1].reset_index(drop=True)
+        df_all = df_all.iloc[::-1].reset_index()
+        df_all.rename(columns={"index": "match_id"}, inplace=True)
+        df_all["match_id"] = df_all["match_id"].astype(int) + 1
 
         for index, row in xgb_df_next_games.iterrows():
             odds_home = df_all.loc[index]['odds_ft_home_team_win']
             odds_draw = df_all.loc[index]['odds_ft_draw']
             odds_away = df_all.loc[index]['odds_ft_away_team_win']
+            match_id = df_all.loc[index]['match_id']
 
             xgb_df_next_games.at[index, 'odds_ft_home_team_win'] = odds_home
             xgb_df_next_games.at[index, 'odds_ft_draw'] = odds_draw
             xgb_df_next_games.at[index, 'odds_ft_away_team_win'] = odds_away
+            xgb_df_next_games.at[index, 'match_id'] = match_id
 
         print(xgb_df_next_games)
         os.environ['TZ'] = 'Europe/Amsterdam'
         time.tzset()
         xgb_df_next_games["date_time"] = time.strftime('%X %x %Z')
-        xgb_df_next_games['id'] = xgb_df_next_games.index
-        xgb_df_next_games['index'] = xgb_df_next_games.index
         xgb_df_next_games['real_result'] = xgb_df_next_games['real_result'].astype('Int64')
 
         upper_limits()
