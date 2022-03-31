@@ -130,3 +130,5 @@ dmypy.json
 !/src/.ipynb_checkpoints/
 !/src/tuning.ipynb
 /src/tuning.ipynb
+
+.DS_Store
