@@ -51,6 +51,17 @@ def read_storage_csv(file_name: str):
     )
 
 
+def from_dict_value_to_df(d):
+    """
+    input = dictionary
+    output = dataframe as part of all the values from the dictionary
+    """
+    df = pd.DataFrame()
+    for v in d.values():
+        df = df.append(v)
+    return df
+
+
 def xgb_model():
     XGB_model = xgb.XGBClassifier(silent=False,
                                   learning_rate=0.005,

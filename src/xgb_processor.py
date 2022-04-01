@@ -7,7 +7,8 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 
-from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model, write_acc_file
+from helpers import read_storage_csv, save_to_db, upper_limits, under_limits, xgb_model, write_acc_file, \
+    from_dict_value_to_df
 
 warnings.filterwarnings('ignore')
 
@@ -88,6 +89,12 @@ class XGBAnalysis:
         df_all = df_all.iloc[::-1].reset_index()
         df_all.rename(columns={"index": "match_id"}, inplace=True)
         df_all["match_id"] = df_all["match_id"].astype(int) + 1
+
+        synch_sort = {}
+        for i in df_all['home_team_name']:
+            synch_sort[i] = xgb_df_next_games[xgb_df_next_games['home_team_name'] == i]
+
+        xgb_df_next_games = from_dict_value_to_df(synch_sort).reset_index(drop=True)
 
         for index, row in xgb_df_next_games.iterrows():
             odds_home = df_all.loc[index]['odds_ft_home_team_win']
